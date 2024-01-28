@@ -22,37 +22,73 @@ lbl = Label(window, text='Всем привет🤠', font = ("Arial Bold",20))
 lbl.grid(column=0, row=0)
 
 #txt = Entry(window, width=0)
-txt = Text(window, height=10, width=60, wrap=WORD, bg='rosybrown', fg='white')
+txt = Text(window, height=15, width=150, wrap=WORD, bg='rosybrown', fg='white')
 txt.grid(column=0, row=1)
 txt.focus()
 
-count = 0
-def click_button():
-	global txt, gen_p, p, count
-	count += 1
-	txt.delete('1.0', 'end')
-	txt.insert(END, next(gen_p)['text'])
-	if count == p.length:
-		btn["state"] = DISABLED
+def check_buttons():
+	if p.marker_pos >= p.length:
+		next_btn["state"] = DISABLED
+		done_btn["state"] = NORMAL
+	else:
+		next_btn["state"] = NORMAL
+		done_btn["state"] = DISABLED
 
+	if p.marker_pos <= 1:
+		previous_btn["state"] = DISABLED
+	else:
+		previous_btn["state"] = NORMAL
+
+
+def init_text():
+	global txt, p
+	txt.insert(END, p.GetNextLine()['text'])
+	check_buttons()
+
+def click_next_button():
+	global txt, p
+	p.Set_text(txt.get('1.0', END))
+	txt.delete('1.0', 'end')
+	txt.insert(END, p.GetNextLine()['text'])
+	check_buttons()
+
+def click_previous_button():
+	global txt, p 
+	#p.Set_text(txt.get('0.0', END))
+	txt.delete('0.0', 'end')
+	txt.insert(END, p.GetPreviousLine()['text'])
+	check_buttons()
+
+def finish():
+	global p, done_btn
+	p.Set_text(txt.get('0.0', END))
+	p.ExportText()
+
+	
 
 def play_audio():
-	global count
-	segment = AudioSegment.from_mp3( j('tmp', str(count-1) + '.mp3') )
+	segment = AudioSegment.from_mp3( j('tmp', str(p.marker_pos-1) + '.mp3') )
 	play(segment)
 
-gen_p = p.NextLineGenerator()
-btn = Button(window, text="Show next phrase", command=click_button)
-btn.grid(column=0, row=2) 
+
+next_btn = Button(window, text="Show next phrase", command=click_next_button)
+next_btn.grid(column=0, row=2) 
+
+previous_btn = Button(window, text="Show previous phrase", command=click_previous_button)
+previous_btn.grid(column=0, row=3)
 
 play_btn = Button(window, text="Play audio", command=play_audio)
-play_btn.grid(column=0, row=3)
+play_btn.grid(column=0, row=4)
+
+done_btn = Button(window, text="Finish and export", command=finish)
+done_btn.grid(column=0, row=5)
 
 
 
-click_button()
+#click_next_button() ##replace with inint
+init_text()
 
-window.geometry('500x700')
+window.geometry('1100x400')
 
 for c in range(4):
 	window.columnconfigure(index=c, weight=2)

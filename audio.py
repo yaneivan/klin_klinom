@@ -6,19 +6,21 @@ class AudioParser:
 	def __init__(self, path_to_file, whisper_model="tiny"):
 		self.audio = AudioSegment.from_file(path_to_file)
 		self.model_name = whisper_model
+		self.marker_pos = 0
 		print("INITING AUDIOPARSER, path to file is", path_to_file)
 
 	def Transcribe(self):
-		#self.audio.export(j('tmp', 'origingal' + '.mp3'), format='mp3')
+		self.audio.export(j('tmp', 'origingal' + '.mp3'), format='mp3')
 		#print("БЛЯТЬ")
 		model =  whisper.load_model(self.model_name)
 		print('Model loaded, starting recognision...')
 		self.transcribtion = model.transcribe(j('tmp', 'origingal' + '.mp3'), verbose=True)
 		self.length = len(self.transcribtion['segments'])
 		print('Recognision finished, total:', self.length, 'phrases.')
-		
-	def CreateGenerator(self):
-		self.generator = self.NextLineGenerator()
+		for line in self.transcribtion['segments']:
+			print('line', line['text'])
+	#def CreateGenerator(self):
+	#	self.generator = self.NextLineGenerator()
 
 
 	def CutItUp(self):
@@ -36,12 +38,27 @@ class AudioParser:
 		cut = self.audio[start_time:end_time]
 		cut.export(path_to_output, format="mp3")
 
+	def GetNextLine(self):
+		self.marker_pos += 1
+		print('getting next line, marker_pos', self.marker_pos, 'line: ', self.transcribtion['segments'][self.marker_pos - 1])
+		return self.transcribtion['segments'][self.marker_pos - 1]
 
-	def NextLineGenerator(self):
-		for phrase in self.transcribtion['segments']:
-			#print("Debug, phrase is", type(phrase), phrase)
-			yield phrase
+	def GetPreviousLine(self):
+		self.marker_pos -= 1
+		return self.transcribtion['segments'][self.marker_pos - 1]
 
+	def Set_text(self, text):
+		print('setting text - ', text)
+		self.transcribtion['segments'][self.marker_pos-1]['text'] = text
 
-		yield {'text':"That's all folks!"}
+	def ExportText(self):
+		all_text = []
+		for line in self.transcribtion['segments']:
+			all_text.append(line['text'].replace('\n', ''))
+
+		import pandas as pd
+		data = {'text':all_text}
+		df = pd.DataFrame(data)
+
+		df.to_excel('output.xlsx', index = True)
 
