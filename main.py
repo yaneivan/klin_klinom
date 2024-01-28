@@ -29,8 +29,8 @@ if where ==  'remote':
 
 	#вместо Transcribe в этом варианте это должен делать сервер
 	sock = socket.socket()
-	#sock.connect(('31.10.64.20', 8080))
-	sock.connect(('localhost', 8080))
+	sock.connect(('31.10.64.20', 8080))
+	#sock.connect(('localhost', 8080))
 
 	data = pickle.dumps(p)
 	msg_len = len(data)
