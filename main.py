@@ -1,97 +1,68 @@
-from tkinter import *
 from audio import *
+from gui import *
 from time import sleep
-from pydub import AudioSegment
-from pydub.playback import play
-from os.path import join as j
-
-#Всем привет!
-#Начинаю это писать ровно в новый год, но это совпадение.
-#Первый раз я пришу чето реально для людей, поэтому придется разбираться с интерфейсом. Думал сначала про Qt, потому что с английского это перевиодится как "милашка", но эта штука выдала ошибку когда я попытался хело ворлд написать. Ну то так начинает разговор? Поэтому tkinter. Надеюсь доделаю, идея нравится.
-
-p = AudioParser('audio\\short.mp3', 'tiny')
-p.Transcribe()
-p.CutItUp()
-# 'large' еще есть
+import argparse
 
 
+parser = argparse.ArgumentParser(
+	prog='KlinKlinom',
+	description='This programm will help you exctract conversations from audio file',
+	epilog='Da.')
+parser.add_argument('filepath')
+parser.add_argument('-m', '--model')
+parser.add_argument('-r', '--remote')
 
-window = Tk()
+args = parser.parse_args()
 
-lbl = Label(window, text='Всем привет🤠', font = ("Arial Bold",20))
-lbl.grid(column=0, row=0)
+where = args.remote
 
-#txt = Entry(window, width=0)
-txt = Text(window, height=15, width=150, wrap=WORD, bg='rosybrown', fg='white')
-txt.grid(column=0, row=1)
-txt.focus()
+if where == 'local':
+	p = AudioParser(args.filepath, args.model)
+	p.Transcribe()
+	p.CutItUp()
 
-def check_buttons():
-	if p.marker_pos >= p.length:
-		next_btn["state"] = DISABLED
-		done_btn["state"] = NORMAL
-	else:
-		next_btn["state"] = NORMAL
-		done_btn["state"] = DISABLED
+if where ==  'remote':
+	import socket
+	import pickle
 
-	if p.marker_pos <= 1:
-		previous_btn["state"] = DISABLED
-	else:
-		previous_btn["state"] = NORMAL
+	p = AudioParser(args.filepath, args.model)
 
+	#вместо Transcribe в этом варианте это должен делать сервер
+	sock = socket.socket()
+	#sock.connect(('31.10.64.20', 8080))
+	sock.connect(('localhost', 8080))
 
-def init_text():
-	global txt, p
-	txt.insert(END, p.GetNextLine()['text'])
-	check_buttons()
+	data = pickle.dumps(p)
+	msg_len = len(data)
+	sock.sendall(msg_len.to_bytes(16, byteorder='big') + data)
+	print("probably sent", msg_len, "bytes, that's all, sleeping")
 
-def click_next_button():
-	global txt, p
-	p.Set_text(txt.get('1.0', END))
-	txt.delete('1.0', 'end')
-	txt.insert(END, p.GetNextLine()['text'])
-	check_buttons()
-
-def click_previous_button():
-	global txt, p 
-	#p.Set_text(txt.get('0.0', END))
-	txt.delete('0.0', 'end')
-	txt.insert(END, p.GetPreviousLine()['text'])
-	check_buttons()
-
-def finish():
-	global p, done_btn
-	p.Set_text(txt.get('0.0', END))
-	p.ExportText()
-
-	
-
-def play_audio():
-	segment = AudioSegment.from_mp3( j('tmp', str(p.marker_pos-1) + '.mp3') )
-	play(segment)
+	sleep(3)
 
 
-next_btn = Button(window, text="Show next phrase", command=click_next_button)
-next_btn.grid(column=0, row=2) 
+#############################################################
+	print('receiving')
+	data = []
+	header = sock.recv(16)
+	msg_len = int.from_bytes(header, byteorder='big')
+	print('receiving', msg_len, 'bytes')
+	bytes_recd = 0
+	while bytes_recd < msg_len:
+	    packet = sock.recv(min(msg_len - bytes_recd, 1024))
+	    if not packet:
+	        raise RuntimeError("No packet error")
+	    
+	    data.append(packet)
+	    bytes_recd += len(packet)
+#############################################################
 
-previous_btn = Button(window, text="Show previous phrase", command=click_previous_button)
-previous_btn.grid(column=0, row=3)
+	sock.close()
 
-play_btn = Button(window, text="Play audio", command=play_audio)
-play_btn.grid(column=0, row=4)
+	print("all recieved, loading original file.")
+	p = pickle.loads(b"".join(data))
 
-done_btn = Button(window, text="Finish and export", command=finish)
-done_btn.grid(column=0, row=5)
+	p.CutItUp()
 
 
-
-#click_next_button() ##replace with inint
-init_text()
-
-window.geometry('1100x400')
-
-for c in range(4):
-	window.columnconfigure(index=c, weight=2)
-
-window.mainloop()
-
+show_gui(p)
+#from gui import *

@@ -11,36 +11,35 @@ class AudioParser:
 
 	def Transcribe(self):
 		self.audio.export(j('tmp', 'origingal' + '.mp3'), format='mp3')
-		#print("БЛЯТЬ")
 		model =  whisper.load_model(self.model_name)
 		print('Model loaded, starting recognision...')
 		self.transcribtion = model.transcribe(j('tmp', 'origingal' + '.mp3'), verbose=True)
 		self.length = len(self.transcribtion['segments'])
 		print('Recognision finished, total:', self.length, 'phrases.')
-		for line in self.transcribtion['segments']:
-			print('line', line['text'])
-	#def CreateGenerator(self):
-	#	self.generator = self.NextLineGenerator()
 
 
 	def CutItUp(self):
+		self.audio_parts = []
 		for num, phrase in enumerate(self.transcribtion['segments']):
 			self.MakeCut(j('tmp', str(num) + '.mp3'), phrase['start'], phrase['end'])
 
 
 	def MakeCut(self, path_to_output, start_time, end_time):
-		#start and end time are in seconds
-
+		#making start and end time are in seconds
 		start_time = start_time * 1000
 		end_time = end_time * 1000
 
+		
 		#audio = AudioSegment.from_file(path_to_input)
 		cut = self.audio[start_time:end_time]
-		cut.export(path_to_output, format="mp3")
+		self.audio_parts.append(cut)
+		#cut.export(path_to_output, format="mp3")
+
+	def GetCurrentPart(self):
+		return self.audio_parts[self.marker_pos-1]
 
 	def GetNextLine(self):
 		self.marker_pos += 1
-		print('getting next line, marker_pos', self.marker_pos, 'line: ', self.transcribtion['segments'][self.marker_pos - 1])
 		return self.transcribtion['segments'][self.marker_pos - 1]
 
 	def GetPreviousLine(self):
