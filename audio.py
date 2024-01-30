@@ -1,6 +1,7 @@
 import whisper
 from pydub import AudioSegment
 from os.path import join as j
+from os import remove
 
 class AudioParser:
 	def __init__(self, path_to_file, whisper_model="tiny"):
@@ -10,10 +11,12 @@ class AudioParser:
 		print("INITING AUDIOPARSER, path to file is", path_to_file)
 
 	def Transcribe(self):
-		self.audio.export(j('tmp', 'origingal' + '.mp3'), format='mp3')
+		
 		model =  whisper.load_model(self.model_name)
 		print('Model loaded, starting recognision...')
-		self.transcribtion = model.transcribe(j('tmp', 'origingal' + '.mp3'), verbose=True)
+		self.audio.export(j('tmp', 'orig' + '.mp3'), format='mp3')
+		self.transcribtion = model.transcribe(j('tmp', 'orig' + '.mp3'), verbose=True)
+		remove(j('tmp', 'orig' + '.mp3'))
 		self.length = len(self.transcribtion['segments'])
 		print('Recognision finished, total:', self.length, 'phrases.')
 
