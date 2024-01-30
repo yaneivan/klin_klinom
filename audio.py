@@ -14,9 +14,9 @@ class AudioParser:
 		
 		model =  whisper.load_model(self.model_name)
 		print('Model loaded, starting recognision...')
-		self.audio.export(j('tmp', 'orig' + '.mp3'), format='mp3')
-		self.transcribtion = model.transcribe(j('tmp', 'orig' + '.mp3'), verbose=True)
-		remove(j('tmp', 'orig' + '.mp3'))
+		self.audio.export('orig' + '.mp3', format='mp3')
+		self.transcribtion = model.transcribe('orig' + '.mp3', verbose=True)
+		remove('orig' + '.mp3')
 		self.length = len(self.transcribtion['segments'])
 		print('Recognision finished, total:', self.length, 'phrases.')
 
