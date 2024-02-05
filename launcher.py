@@ -6,10 +6,9 @@ import subprocess
 
 window = Tk()
 window.title('Klin Launcher')
-window.geometry("300x400")
+window.geometry("400x400")
 
 
-#СУДА ДОБАВИТЬ КНОПКУ ВОПРОСИКА
 lbl1 = Label(window, text="Выберите модель которая будет распозновать текст \n(от этого зависит вес модели,\n время разпознования и точность результата)")
 lbl1.grid(column=0, row=0)
 
@@ -44,21 +43,49 @@ chk = Checkbutton(window, text='Да', variable=var)
 chk.grid(column=0, row=5)
 
 
+lbl4 = Label(window, text='\nСохранить результат обработки на сервере или вашем компьютере')
+lbl4.grid(column=0, row=6)
+
+keep = IntVar()
+chk2 = Checkbutton(window, text='Да', variable=keep)
+chk2.grid(column=0, row=7)
+
+
+lbl5 = Label(window, text='\nПопытаться загрузить обработанный ранее файл?')
+lbl5.grid(column=0, row = 8)
+
+load = IntVar()
+chk3 = Checkbutton(window, text='Да', variable=load)
+chk3.grid(column=0, row = 9)
+
 
 def confirm():
-	global var, window
+	global var, window, keep, load
 	if path == '':
 		raise RuntimeError("No path specified")
-	remote = 'local'
+
 	if var.get() == 1:
 		remote = 'remote'
+	elif var.get() == 0:
+		remote = 'local'
+
+	if keep.get() == 1:
+		keep = 'yes'
+	elif keep.get() == 0:
+		keep = 'no'
+
+	if load.get() == 1:
+		load = 'yes'
+	elif load.get() == 0:
+		load = 'no'
+
 	model = model_selector.get()
 	window.destroy()
-	subprocess.run(['python', 'main.py', path, '--model', model, '--remote', remote])
+	subprocess.run(['python', 'main.py', path, '--model', model, '--remote', remote, '--keep', keep, '--load', load])
 	
 
 confirm_btn = Button(window, text = 'Confirm', command=confirm)
-confirm_btn.grid(column=0, row=6, pady=20)
+confirm_btn.grid(column=0, row=10, pady=20)
 
 
 
