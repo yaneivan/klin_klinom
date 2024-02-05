@@ -43,11 +43,14 @@ class AudioParser:
 						break
 		if success == False:
 			print("Не нашлось ничего блин")
+		else:
+			print("Жесть чето нашлось вау")
 		return success
 
 
 	def Transcribe(self):
 		if self.load_me:
+			print('Trying to load previous progres...')
 			self.Load()
 		elif not( self.load_me ):
 			model =  whisper.load_model(self.model_name)
