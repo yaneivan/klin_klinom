@@ -67,6 +67,9 @@ class AudioParser:
 
 
 	def CutItUp(self):
+		if not(isdir('tmp')):
+			mkdir('tmp')
+
 		self.audio_parts = []
 		for num, phrase in enumerate(self.transcribtion['segments']):
 			self.MakeCut(join('tmp', str(num) + '.mp3'), phrase['start'], phrase['end'])
