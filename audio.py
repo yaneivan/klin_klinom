@@ -65,14 +65,38 @@ class AudioParser:
 			self.Save()
 			print('Flag for saving was set, saving...')
 
+	def join_small_parts(self, min_duration):
+		result = []
+		tmp = {'id':0, 'start':self.transcribtion['segments'][0].get('start'), 'text':''}
+		for num, phrase in enumerate(self.transcribtion['segments']):
+			print(phrase)
+			tmp.update({'end':phrase.get('end'), 'text':tmp.get('text') + ' ' + phrase.get('text')})
+
+			if (int(tmp.get('end')) - int(tmp.get('start'))) > min_duration:
+				print("Making another cut, tmp: ", tmp)
+				result.append(tmp)
+				tmp.update({'id':tmp.get('id')+1, 'start':tmp.get('end'), 'text':''})
+		result.append(tmp)
+		return result
+
 
 	def CutItUp(self):
-		if not(isdir('tmp')):
-			mkdir('tmp')
+		#if not(isdir('tmp')):
+		#	mkdir('tmp')
+
+		#print(self.transcribtion['segments'])
+		self.parsed_segments = self.join_small_parts(10)
+		self.length = len(self.parsed_segments)
+
+		print('Parsed Segments: ', self.parsed_segments)
+
 
 		self.audio_parts = []
-		for num, phrase in enumerate(self.transcribtion['segments']):
+		#for num, phrase in enumerate(self.transcribtion['segments']):
+		for num, phrase in enumerate(self.parsed_segments):
 			self.MakeCut(join('tmp', str(num) + '.mp3'), phrase['start'], phrase['end'])
+
+
 
 
 
@@ -92,7 +116,8 @@ class AudioParser:
 
 	def GetNextLine(self):
 		self.marker_pos += 1
-		return self.transcribtion['segments'][self.marker_pos - 1]
+		return self.parsed_segments[self.marker_pos-1]
+		#return self.transcribtion['segments'][self.marker_pos - 1]
 
 	def GetPreviousLine(self):
 		self.marker_pos -= 1
@@ -100,7 +125,8 @@ class AudioParser:
 
 	def Set_text(self, text):
 		print('setting text - ', text)
-		self.transcribtion['segments'][self.marker_pos-1]['text'] = text
+		#self.transcribtion['segments'][self.marker_pos-1]['text'] = text
+		self.parsed_segments[self.marker_pos - 1]['text'] = text
 
 	def ExportText(self):
 		all_text = []
