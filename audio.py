@@ -74,9 +74,12 @@ class AudioParser:
 
 			if (int(tmp.get('end')) - int(tmp.get('start'))) > min_duration:
 				print("Making another cut, tmp: ", tmp)
-				result.append(tmp)
+				result.append(tmp.copy())
+
 				tmp.update({'id':tmp.get('id')+1, 'start':tmp.get('end'), 'text':''})
+				print("\n AFTER TMP CLEARING", tmp)
 		result.append(tmp)
+		print("Join Small Parts result", result)
 		return result
 
 
@@ -116,12 +119,14 @@ class AudioParser:
 
 	def GetNextLine(self):
 		self.marker_pos += 1
+		print("GET NEXXT LINE", self.parsed_segments[self.marker_pos-1])
 		return self.parsed_segments[self.marker_pos-1]
 		#return self.transcribtion['segments'][self.marker_pos - 1]
 
 	def GetPreviousLine(self):
 		self.marker_pos -= 1
-		return self.transcribtion['segments'][self.marker_pos - 1]
+		return self.parsed_segments[self.marker_pos-1]
+		#return self.transcribtion['segments'][self.marker_pos - 1]
 
 	def Set_text(self, text):
 		print('setting text - ', text)
@@ -130,7 +135,8 @@ class AudioParser:
 
 	def ExportText(self):
 		all_text = []
-		for line in self.transcribtion['segments']:
+		#for line in self.transcribtion['segments']:
+		for line in self.parsed_segments:
 			all_text.append(line['text'].replace('\n', ''))
 
 		import pandas as pd

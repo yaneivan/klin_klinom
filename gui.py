@@ -17,6 +17,7 @@ def show_gui(p):
 	txt.focus()
 
 	def check_buttons():
+		print("Marker pos: ", p.marker_pos)
 		if p.marker_pos >= p.length:
 			next_btn["state"] = DISABLED
 			done_btn["state"] = NORMAL

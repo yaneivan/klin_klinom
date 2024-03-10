@@ -81,6 +81,8 @@ def confirm():
 
 	model = model_selector.get()
 	window.destroy()
+	print("Command for main is:" )
+	print('python', 'main.py', path, '--model', model, '--remote', remote, '--keep', keep, '--load', load)
 	subprocess.run(['python', 'main.py', path, '--model', model, '--remote', remote, '--keep', keep, '--load', load])
 	
 
