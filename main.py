@@ -38,7 +38,7 @@ def process(args):
 		data = pickle.dumps(p)
 		msg_len = len(data)
 		sock.sendall(msg_len.to_bytes(16, byteorder='big') + data)
-		print("probably sent", msg_len, "bytes, that's all, sleeping")
+		print("probably sent", msg_len//1024//1024, "MBytes, that's all, sleeping")
 
 		sleep(3)
 
@@ -48,7 +48,7 @@ def process(args):
 		data = []
 		header = sock.recv(16)
 		msg_len = int.from_bytes(header, byteorder='big')
-		print('receiving', msg_len, 'bytes')
+		print('receiving', msg_len//1024//1024, 'MBytes')
 		bytes_recd = 0
 		while bytes_recd < msg_len:
 		    packet = sock.recv(min(msg_len - bytes_recd, 1024))

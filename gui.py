@@ -2,6 +2,7 @@ from tkinter import *
 from pydub import AudioSegment
 from pydub.playback import play
 from os.path import join as j
+import threading
 
 def show_gui(p):
 	window = Tk()
@@ -55,12 +56,10 @@ def show_gui(p):
 		p.Set_text(txt.get('0.0', END))
 		p.ExportText()
 
-		
+	
 
 	def play_audio():
-		#segment = AudioSegment.from_mp3( j('tmp', str(p.marker_pos-1) + '.mp3') )
-		#play(segment)
-		play(p.GetCurrentPart())
+		threading.Thread( target=play,  args=[p.GetCurrentPart()] ).start()
 
 
 
