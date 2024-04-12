@@ -4,6 +4,7 @@ from time import sleep
 import argparse
 
 
+
 parser = argparse.ArgumentParser(
 	prog='KlinKlinom',
 	description='This programm will help you exctract conversations from audio file',
@@ -13,10 +14,18 @@ parser.add_argument('-m', '--model')
 parser.add_argument('-r', '--remote')
 parser.add_argument('-k', '--keep')
 parser.add_argument('-l', '--load')
+parser.add_argument('--load_tmp')
 
 args = parser.parse_args()
 
 def process(args):
+	import pickle
+	if args.load_tmp == 'yes':
+		with open('tmp_save.pickle', 'rb') as file:
+			p = pickle.load(file)
+		return p
+
+
 	if args.remote == 'local':
 		p = AudioParser(args.filepath, args.model, args.keep, args.load)
 		p.Transcribe()
@@ -38,25 +47,26 @@ def process(args):
 		data = pickle.dumps(p)
 		msg_len = len(data)
 		sock.sendall(msg_len.to_bytes(16, byteorder='big') + data)
-		print("probably sent", msg_len//1024//1024, "MBytes, that's all, sleeping")
+		print("Sending about", msg_len//1024//1024, "MBytes, that's all, sleeping for now")
 
-		sleep(3)
+		#sleep(3)
 
 
 	#############################################################
-		print('receiving')
+		print('Waiting for response from server')
 		data = []
 		header = sock.recv(16)
 		msg_len = int.from_bytes(header, byteorder='big')
-		print('receiving', msg_len//1024//1024, 'MBytes')
+		print('Receiving', msg_len//1024//1024, 'MBytes')
 		bytes_recd = 0
 		while bytes_recd < msg_len:
-		    packet = sock.recv(min(msg_len - bytes_recd, 1024))
-		    if not packet:
-		        raise RuntimeError("No packet error")
-		    
-		    data.append(packet)
-		    bytes_recd += len(packet)
+			print("Downloading...", round((bytes_recd/msg_len)*100), "%", end='\r')
+			packet = sock.recv(min(msg_len - bytes_recd, 1024))
+			if not packet:
+				raise RuntimeError("No packet error")
+			
+			data.append(packet)
+			bytes_recd += len(packet)
 	#############################################################
 
 		sock.close()

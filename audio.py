@@ -119,7 +119,7 @@ class AudioParser:
 
 	def GetNextLine(self):
 		self.marker_pos += 1
-		print("GET NEXXT LINE", self.parsed_segments[self.marker_pos-1])
+		print("GET NEXT LINE", self.parsed_segments[self.marker_pos-1])
 		return self.parsed_segments[self.marker_pos-1]
 		#return self.transcribtion['segments'][self.marker_pos - 1]
 
@@ -134,14 +134,26 @@ class AudioParser:
 		self.parsed_segments[self.marker_pos - 1]['text'] = text
 
 	def ExportText(self):
-		all_text = []
-		#for line in self.transcribtion['segments']:
-		for line in self.parsed_segments:
-			all_text.append(line['text'].replace('\n', ''))
-
 		import pandas as pd
-		data = {'text':all_text}
-		df = pd.DataFrame(data)
+		for i in range(len(self.parsed_segments)):
+			(self.parsed_segments[i]['start']) = str( int ((self.parsed_segments[i]['start']) // 60)) + " Мин. " + str( int((self.parsed_segments[i]['start']) % 60)) + " с."
+
+		df = pd.DataFrame.from_dict(self.parsed_segments)
+
+
+
+		#all_text = []
+		#for line in self.transcribtion['segments']:
+		#print("Exported Text")
+		#print(self.parsed_segments)
+		#for line in self.parsed_segments:
+		#	all_text.append(line['text'].replace('\n', ''))
+
+		
+		#data = {'text':all_text}
+		#df = pd.DataFrame(data)
+
+		#print(df)
 
 		df.to_excel('output.xlsx', index = True)
 

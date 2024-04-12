@@ -34,7 +34,7 @@ while True:
     print('MBytes expected', msg_len//1024//1024)
     bytes_recd = 0
     while bytes_recd < msg_len:
-        print(round((bytes_recd/msg_len)*100), "%", end='\r')
+        print("Downloading...", round((bytes_recd/msg_len)*100), "%", end='\r')
         packet = conn.recv(min(msg_len - bytes_recd, 1024))
         if not packet:
             raise RuntimeError("NO packet error")

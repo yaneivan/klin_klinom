@@ -6,7 +6,7 @@ import subprocess
 
 window = Tk()
 window.title('Klin Launcher')
-window.geometry("400x400")
+window.geometry("400x440")
 
 
 lbl1 = Label(window, text="Выберите модель которая будет распозновать текст \n(от этого зависит вес модели,\n время разпознования и точность результата)")
@@ -86,9 +86,16 @@ def confirm():
 	subprocess.run(['python', 'main.py', path, '--model', model, '--remote', remote, '--keep', keep, '--load', load])
 	
 
+def load_tmp():
+	window.destroy()
+	subprocess.run(['python', 'main.py', "an_empty_field_here", '--load_tmp', 'yes'])
+
+
+
 confirm_btn = Button(window, text = 'Confirm', command=confirm)
 confirm_btn.grid(column=0, row=10, pady=20)
 
-
+load_progress = Button(window, text="Load saved progress", command=load_tmp)
+load_progress.grid(column=0, row=11)
 
 window.mainloop()
