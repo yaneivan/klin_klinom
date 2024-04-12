@@ -2,3 +2,5 @@ openai-whisper
 pydub
 ffmpeg
 pandas
+PyAudio
+openpyxl
